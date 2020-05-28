@@ -17,8 +17,8 @@ async def test(ctx):
 async def join(ctx):
 	author = ctx.author
 	voice_channel = await author.voice.channel.connect()
-	# voice_channel.play(discord.FFmpegPCMAudio("lookatyou.mp3"))
-	voice_channel.play(discord.FFmpegPCMAudio("https://upload.wikimedia.org/wikipedia/ru/transcoded/8/84/%D0%93%D0%BE%D0%BB%D0%BE%D1%81_SHODAN.ogg/%D0%93%D0%BE%D0%BB%D0%BE%D1%81_SHODAN.ogg.mp3"))
+	voice_channel.play(discord.FFmpegPCMAudio("lookatyou.mp3"))
+	# voice_channel.play(discord.FFmpegPCMAudio("https://upload.wikimedia.org/wikipedia/ru/transcoded/8/84/%D0%93%D0%BE%D0%BB%D0%BE%D1%81_SHODAN.ogg/%D0%93%D0%BE%D0%BB%D0%BE%D1%81_SHODAN.ogg.mp3"))
 
 @bot.command(pass_context=True)
 async def leave(ctx):
