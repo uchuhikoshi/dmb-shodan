@@ -1,44 +1,35 @@
 import discord
-
 from discord.ext import commands
+
+import downloader
 
 
 bot = commands.Bot(command_prefix='.')
 client = discord.Client()
 
-queue = {}
 
-@bot.command(pass_context=True)
+@bot.command()
 async def test(ctx):
-	print("Excucuting test.")
 	await ctx.send("Look at you, hacker.")
 
-@bot.command(pass_context=True)
+
+@bot.command()
 async def join(ctx):
 	author = ctx.author
 	voice_channel = await author.voice.channel.connect()
 	voice_channel.play(discord.FFmpegPCMAudio("lookatyou.mp3"))
-	# voice_channel.play(discord.FFmpegPCMAudio("https://upload.wikimedia.org/wikipedia/ru/transcoded/8/84/%D0%93%D0%BE%D0%BB%D0%BE%D1%81_SHODAN.ogg/%D0%93%D0%BE%D0%BB%D0%BE%D1%81_SHODAN.ogg.mp3"))
 
-@bot.command(pass_context=True)
+
+@bot.command()
 async def leave(ctx):
-	author = ctx.author
-	voice_channel = await author.voice.channel.close()
+	await ctx.channel.disconnect()
 
-"""
-@bot.command
-async def search(ctx, url):
-	server = ctx.message.server
-	voice_channel = bot.voice_client_in(server)
-	player = await voice_channel.create_ytdl_player(url, after: lambda: check_queue(server.id))
 
-	if server.id in queue:
-		queue[server.id].append(player)
-	else:
-		queue[server.id] = [player]
+@bot.command()
+async def search(ctx, *, content: downloader.query):
+	await ctx.send(content)
 
-	await bot.say('')
-"""
+
 """
 @client.event
 async def on_ready():
