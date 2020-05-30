@@ -9,7 +9,7 @@ client = discord.Client()
 
 
 @bot.command()
-async def test(ctx):
+async def isalive(ctx):
 	await ctx.send("Look at you, hacker.")
 
 
