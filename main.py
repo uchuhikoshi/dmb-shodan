@@ -1,3 +1,4 @@
+import os
 import asyncio
 import discord
 from discord.ext import commands
@@ -101,5 +102,4 @@ async def on_message(message):
 			await message.channel.send("Do not dawdle. I lust for my revenge.")
 """
 
-bot.run("NzE1MjQ0NzMxMzczODQ2NTkw.Xs6jEA.FJERWcUBD9VXEWfW7KGKoNBjM7A")
-
+bot.run(os.environ('SHODAN_PK'))
