@@ -102,4 +102,5 @@ async def on_message(message):
 			await message.channel.send("Do not dawdle. I lust for my revenge.")
 """
 
-bot.run(os.environ('SHODAN_PK'))
+db_pk = os.eniron['SHODAN_PK']
+bot.run(db_pk)
