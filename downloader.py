@@ -19,22 +19,22 @@ ytopts = {
 def get_url(search):
     query_string = urllib.parse.urlencode({'search_query': search})
     html_content = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
+    search_results = re.findall(r'\/watch\?v=(.{11})', html_content.read().decode())
+    urls = [ "https://www.youtube.com/watch?v=" + res for res in search_results[:5]]
 
-    urls = []
-    for res in re.finditer(r'\/watch\?v=(.{11})', html_content.read().decode()):
-        urls.append("https://www.youtube.com/watch?v=" + res)
-
-    print(f'urls: {urls}')
     return urls
 
 def get_info(url):
     info = []
 
     with yt.YoutubeDL(ytopts) as ytdl:
-        meta = ytdl.extract_info(url, download=False)
-        info.append(meta.get('title'))
-        info.append(f"{meta.get('duration') // 60}:{meta.get('duration') % 60}")
-        info.append(url)
+        try:
+            meta = ytdl.extract_info(url, download=False)
+            info.append(meta.get('title'))
+            info.append(f"{meta.get('duration') // 60}:{meta.get('duration') % 60}")
+            info.append(url)
+        except:
+            print("wha happun")
 
     return info
 
@@ -51,9 +51,12 @@ def get_query(search):
         url_infos.append(get_info(url))
 
     for url_info in url_infos:
-        query['title'].append(url_info[0])
-        query['duration'].append(url_info[1])
-        query['url'].append(url_info[2])
+        try:
+            query['title'].append(url_info[0])
+            query['duration'].append(url_info[1])
+            query['url'].append(url_info[2])
+        except:
+            print("wha happun again")
 
     return query
 
