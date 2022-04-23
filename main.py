@@ -30,6 +30,8 @@ async def leave(ctx):
 
 @bot.command(aliases=['s'])
 async def search(ctx, *, content: downloader.get_query):
+    print(f"Got: {ctx.message.content}")
+    print(f"found: {content}")
     embed = discord.Embed()
     embed.title = 'Found:'
     embed.description = 'Type `number` of desired track to play, or type `cancel`, `c` for short.'
@@ -54,9 +56,9 @@ async def search(ctx, *, content: downloader.get_query):
         if msg.content == 'cancel' or msg.content == 'c':
             return
 
-    indexes = [int(i) for i in msg.content.split()]
-    for index in indexes:
-        queue.append(content['url'][index])
+        indexes = [int(i) for i in msg.content.split()]
+        for index in indexes:
+            queue.append(content['url'][index])
 
 @bot.command(name='queue', aliases=['q'])
 async def get_queue(ctx):
