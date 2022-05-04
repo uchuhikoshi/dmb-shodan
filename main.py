@@ -37,7 +37,7 @@ async def search(ctx, *, content: downloader.get_query):
     embed.description = 'Type `number` of desired track to play, or type `cancel`, `c` for short.'
 
     for i in range(len(content['title'])):
-        embed.add_field(name=f"`{i+1}`", value=f"{content['title'][i]}\t{content['duration'][i]}", inline=False)
+        embed.add_field(name=f"`{i+1}`", value=f"{content['title'][i]}\t{content['duration'][i]}\n{content['link'][i]}", inline=False)
 
         # embed.add_field(name='number', value=f"`{i+1}`")
 	# embed.add_field(name='title', value=content['title'][i])

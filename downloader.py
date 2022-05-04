@@ -1,65 +1,56 @@
+import os
 import re
-import urllib.request
-import urllib.parse
-import youtube_dl as yt
 
+import googleapiclient.discovery
 
-ytopts = {
-    'default_search': 'ytsearch',
-    'format': 'bestaudio/best',
-    'extractaudio': True,
-    # 'postprocessors': [{
-    # 	'preferredconc': 'mp3',
-    # 	'preferredquality': 192
-    # }],
-    'outtmpl': '/video_cache/%(title)s.%(ext)s',
-}
+def get_duration(bad_duration):
+    pass
 
+def get_query(search_string):
+    api_service_name = "youtube"
+    api_version = "v3"
+    DEVELOPER_KEY = os.environ['YT_API_KEY']
 
-def get_url(search):
-    query_string = urllib.parse.urlencode({'search_query': search})
-    html_content = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
-    search_results = re.findall(r'\/watch\?v=(.{11})', html_content.read().decode())
-    urls = [ "https://www.youtube.com/watch?v=" + res for res in search_results[:5]]
+    youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = DEVELOPER_KEY)
 
-    return urls
+    request = youtube.search().list(
+        part="snippet",
+        maxResults=10,
+        q=search_string
+    )
+    response = request.execute()
+    items = response['items']
 
-def get_info(url):
-    info = []
+    videoIds = []
+    playlistIds = []
+    
+    for item in items:
+        if item['id']['kind'] == "youtube#video":
+            videoIds.append(item['id']['videoId'])
+        else:
+            playlistIds.append(item['id'])
+    
+    videoIds = ','.join(videoIds)
+    # playlistIds = ','.join(playlistIds)
 
-    with yt.YoutubeDL(ytopts) as ytdl:
-        try:
-            meta = ytdl.extract_info(url, download=False)
-            info.append(meta.get('title'))
-            info.append(f"{meta.get('duration') // 60}:{meta.get('duration') % 60}")
-            info.append(url)
-        except:
-            print("wha happun")
+    request = youtube.videos().list(
+        part="snippet,contentDetails",
+        id=videoIds
+    )
+    response = request.execute()
+    videos = response['items']
 
-    return info
-
-def get_query(search):
-    query = {
-        'title': [],
-        'duration': [],
-        'url': []
+    query_list = {
+        'title': list(),
+        'duration': list(),
+        'link': list()
     }
-    urls = get_url(search)
-    url_infos = []
+    for video in videos:
+        query_list['title'].append(video['snippet']['title'])
+        query_list['duration'].append(get_duration(video['contentDetails']['duration']))
+        query_list['link'].append(video['id'])
 
-    for url in urls:
-        url_infos.append(get_info(url))
+    print(query_list)
 
-    for url_info in url_infos:
-        try:
-            query['title'].append(url_info[0])
-            query['duration'].append(url_info[1])
-            query['url'].append(url_info[2])
-        except:
-            print("wha happun again")
+    return query_list
 
-    return query
-
-def download(url):
-    with yt.YoutubeDL(ytopts) as ytdl:
-        ytdl.download(url)
