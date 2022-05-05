@@ -1,17 +1,16 @@
 import os
-import re
 
 import googleapiclient.discovery
 
-def get_duration(bad_duration):
+def convert_duration(bad_duration):
     pass
 
-def get_query(search_string):
+def query_for(search_string):
     api_service_name = "youtube"
     api_version = "v3"
     DEVELOPER_KEY = os.environ['YT_API_KEY']
 
-    youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey = DEVELOPER_KEY)
+    youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
 
     request = youtube.search().list(
         part="snippet",
@@ -40,17 +39,23 @@ def get_query(search_string):
     response = request.execute()
     videos = response['items']
 
-    query_list = {
-        'title': list(),
-        'duration': list(),
-        'link': list()
-    }
-    for video in videos:
-        query_list['title'].append(video['snippet']['title'])
-        query_list['duration'].append(get_duration(video['contentDetails']['duration']))
-        query_list['link'].append(video['id'])
+    return videos
 
-    print(query_list)
+def make_results_list(results):
+    results_list = []
+    for i in range(len(results)):
+        results_list.append({
+                'title': results[i]['snippet']['title'],
+                'duration': results[i]['contentDetails']['duration'],
+                'url': "www.youtube.com/watch?v=" + results[i]['id']
+            }
+        )
 
-    return query_list
+    return results_list 
+
+def search(request):
+    response = query_for(request)
+    found = make_results_list(response)
+
+    return found
 
