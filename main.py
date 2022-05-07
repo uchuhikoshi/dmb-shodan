@@ -1,10 +1,10 @@
 import os
 import asyncio
 import discord
-import youtube_dl
 import yapi_wrapper
 
 from discord.ext import commands
+from yt_dlp import YoutubeDL
 
 bot = commands.Bot(command_prefix='.')
 queue = []
@@ -16,8 +16,12 @@ async def isalive(ctx):
 @bot.command(aliases=['j'])
 async def join(ctx):
     author = ctx.author
-    voice_channel = await author.voice.channel.connect()
-    voice_channel.play(discord.FFmpegPCMAudio("lookatyou.mp3"))
+    bot_vc = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+
+    if author.voice is None:
+        await ctx.send("You must be in a voice chat.")
+    elif bot_vc is None:
+        return await author.voice.channel.connect()
 
 @bot.command(aliases=['s'])
 async def search(ctx, *, content: yapi_wrapper.search):
@@ -36,27 +40,47 @@ async def search(ctx, *, content: yapi_wrapper.search):
 
     def check(m):
         return m.author == ctx.author
-            #if type(m.content) is type(int()) and m.content in range(1,11):
     
-    try:
-        msg = await bot.wait_for('message', timeout=30.0, check=check)
-    except asyncio.TimeoutError:
-        await ctx.send("Timeout.")
+    try: msg = await bot.wait_for('message', timeout=30.0, check=check)
+    except asyncio.TimeoutError: await ctx.send("Timeout.")
 
     queue.append(content[int(msg.content)])
 
 @bot.command(aliases=['p'])
-async def play(ctx):
-    ydl_opts = {
-        'cachedir': 'none',
-        'format': 'worst',
-        'outtmpl': './dwnld'
+async def play(ctx, url):
+    vc = await join(ctx)
+    if vc is None:
+        bot_vc = discord.utils.get(ctx.bot.voice_clients, guild=ctx.guild)
+        if bot_vc is None:
+            return
+        
+        vc = bot_vc
+
+    with YoutubeDL({'format': 'bestaudio', 'noplaylist': 'True'}) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+    source = info['formats'][4]['url']
+
+    FFMPEG_OPTS = {
+        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+        'options': '-vn'
     }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([queue[0]['url']])
-    
-    vc = await ctx.author.voice.channel.connect()
-    vc.play(discord.FFmpegPCMAudio("./dwnld"))
+
+    await ctx.send(f"Now playing: {info['title']}.")
+    if vc.is_playing():
+        vc.stop()
+    vc.play(discord.FFmpegPCMAudio(source, **FFMPEG_OPTS))
+
+@bot.command(aliases=['pq'])
+async def play_queue(ctx):
+    while queue:
+        await play(queue.pop(0))
+
+    await ctx.send("Queue is empty.")
+
+@bot.command(aliases=['pp'])
+async def pause(ctx):
+    pass
 
 if __name__ == '__main__':
     db_pk = os.environ['SHODAN_PK']
